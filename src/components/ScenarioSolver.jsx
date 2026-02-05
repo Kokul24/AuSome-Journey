@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTTS } from '../hooks/useTTS';
 
@@ -80,135 +80,175 @@ const actions = [
     "Teach Students", "Fly Rocket", "Harvest Crops", "Build House"
 ];
 
-const ScenarioSolver = () => {
-    const navigate = useNavigate();
-    const { speak } = useTTS();
+// Stateless Functional Component
+const ProblemDisplay = ({ problem }) => {
+    return (
+        <div style={{
+            border: '2px solid #ccc',
+            borderRadius: '10px',
+            padding: '20px',
+            backgroundColor: '#f9f9f9',
+            marginBottom: '20px'
+        }}>
+            <h3 style={{ fontSize: '20px', color: '#333' }}>{problem}</h3>
+        </div>
+    );
+};
 
-    const [currentScenario, setCurrentScenario] = useState(null);
-    const [selectedLocation, setSelectedLocation] = useState("");
-    const [selectedAction, setSelectedAction] = useState("");
-    const [message, setMessage] = useState("");
-    const [isCorrect, setIsCorrect] = useState(false);
+class ScenarioSolverClass extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentScenario: null,
+            selectedLocation: "",
+            selectedAction: "",
+            message: "",
+            isCorrect: false
+        };
+    }
 
-    useEffect(() => {
-        loadNewScenario();
-    }, []);
+    componentDidMount() {
+        this.loadNewScenario();
+    }
 
-    const loadNewScenario = () => {
+    loadNewScenario = () => {
         const randomIndex = Math.floor(Math.random() * scenarios.length);
-        setCurrentScenario(scenarios[randomIndex]);
-        setSelectedLocation("");
-        setSelectedAction("");
-        setMessage("");
-        setIsCorrect(false);
+        this.setState({
+            currentScenario: scenarios[randomIndex],
+            selectedLocation: "",
+            selectedAction: "",
+            message: "",
+            isCorrect: false
+        }, () => {
+            // Mimic the useEffect behavior for auto-read
+            if (this.state.currentScenario) {
+                setTimeout(() => {
+                    this.props.speak(this.state.currentScenario.problem);
+                }, 500);
+            }
+        });
     };
 
-    const handleSubmit = (e) => {
+    handleSubmit = (e) => {
         e.preventDefault();
+        const { selectedLocation, selectedAction, currentScenario } = this.state;
 
         if (!selectedLocation || !selectedAction) {
-            setMessage("Please select both options.");
+            this.setState({ message: "Please select both options." });
             return;
         }
 
         if (selectedLocation === currentScenario.correctLocation &&
             selectedAction === currentScenario.correctAction) {
-            setIsCorrect(true);
+            this.setState({ isCorrect: true });
             const msg = `Correct! You are a ${currentScenario.profession}!`;
-            setMessage(msg);
-            speak(msg);
-            setTimeout(() => navigate(currentScenario.route), 2000);
+            this.setState({ message: msg });
+            this.props.speak(msg);
+            setTimeout(() => this.props.navigate(currentScenario.route), 2000);
         } else {
-            setMessage("Incorrect. Try again!");
-            speak("Incorrect. Try again!");
+            this.setState({ message: "Incorrect. Try again!" });
+            this.props.speak("Incorrect. Try again!");
         }
     };
 
-    if (!currentScenario) return <div>Loading...</div>;
+    handleLocationChange = (e) => {
+        this.setState({ selectedLocation: e.target.value });
+    }
 
-    return (
-        <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>What should we do?</h2>
+    handleActionChange = (e) => {
+        this.setState({ selectedAction: e.target.value });
+    }
 
-            <div style={{
-                border: '2px solid #ccc',
-                borderRadius: '10px',
-                padding: '20px',
-                backgroundColor: '#f9f9f9',
-                marginBottom: '20px'
-            }}>
-                <h3 style={{ fontSize: '20px', color: '#333' }}>{currentScenario.problem}</h3>
-            </div>
+    render() {
+        const { currentScenario, selectedLocation, selectedAction, message, isCorrect } = this.state;
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Where should we go?
-                    </label>
-                    <select
-                        value={selectedLocation}
-                        onChange={(e) => setSelectedLocation(e.target.value)}
-                        style={{ padding: '10px', width: '100%', fontSize: '16px' }}
+        if (!currentScenario) return <div>Loading...</div>;
+
+        return (
+            <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>What should we do?</h2>
+
+                {/* Using the Stateless Component */}
+                <ProblemDisplay problem={currentScenario.problem} />
+
+                <form onSubmit={this.handleSubmit}>
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                            Where should we go?
+                        </label>
+                        <select
+                            value={selectedLocation}
+                            onChange={this.handleLocationChange}
+                            style={{ padding: '10px', width: '100%', fontSize: '16px' }}
+                        >
+                            <option value="">Select Location</option>
+                            {locations.map(loc => (
+                                <option key={loc} value={loc}>{loc}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                            What is the job?
+                        </label>
+                        <select
+                            value={selectedAction}
+                            onChange={this.handleActionChange}
+                            style={{ padding: '10px', width: '100%', fontSize: '16px' }}
+                        >
+                            <option value="">Select Action</option>
+                            {actions.map(act => (
+                                <option key={act} value={act}>{act}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        type="submit"
+                        style={{
+                            padding: '12px 24px',
+                            fontSize: '18px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
                     >
-                        <option value="">Select Location</option>
-                        {locations.map(loc => (
-                            <option key={loc} value={loc}>{loc}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        What is the job?
-                    </label>
-                    <select
-                        value={selectedAction}
-                        onChange={(e) => setSelectedAction(e.target.value)}
-                        style={{ padding: '10px', width: '100%', fontSize: '16px' }}
-                    >
-                        <option value="">Select Action</option>
-                        {actions.map(act => (
-                            <option key={act} value={act}>{act}</option>
-                        ))}
-                    </select>
-                </div>
+                        Solve Scenario
+                    </button>
+                </form>
 
                 <button
-                    type="submit"
-                    style={{
-                        padding: '12px 24px',
-                        fontSize: '18px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer'
-                    }}
+                    onClick={this.loadNewScenario}
+                    style={{ marginTop: '20px', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}
                 >
-                    Solve Scenario
+                    New Problem
                 </button>
-            </form>
 
-            <button
-                onClick={loadNewScenario}
-                style={{ marginTop: '20px', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}
-            >
-                New Problem
-            </button>
+                {message && (
+                    <div style={{
+                        marginTop: '20px',
+                        padding: '10px',
+                        backgroundColor: isCorrect ? '#d4edda' : '#f8d7da',
+                        color: isCorrect ? '#155724' : '#721c24',
+                        borderRadius: '5px'
+                    }}>
+                        {message}
+                    </div>
+                )}
+            </div>
+        );
+    }
+}
 
-            {message && (
-                <div style={{
-                    marginTop: '20px',
-                    padding: '10px',
-                    backgroundColor: isCorrect ? '#d4edda' : '#f8d7da',
-                    color: isCorrect ? '#155724' : '#721c24',
-                    borderRadius: '5px'
-                }}>
-                    {message}
-                </div>
-            )}
-        </div>
-    );
+// Wrapper to provide hooks to class component
+const ScenarioSolver = (props) => {
+    const navigate = useNavigate();
+    const { speak } = useTTS();
+
+    return <ScenarioSolverClass {...props} navigate={navigate} speak={speak} />;
 };
 
 export default ScenarioSolver;
