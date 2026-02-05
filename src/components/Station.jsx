@@ -92,57 +92,9 @@ const Station = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 overflow-hidden relative">
-            {/* Fancy Guess Who Button - Top Left */}
-            <button
-                onClick={() => navigate('/quiz')}
-                onMouseEnter={() => speak("Play Guess Who?")}
-                className="fixed top-6 left-6 z-50 px-6 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white font-extrabold text-lg rounded-full shadow-[0_8px_0_rgb(139,0,139)] active:shadow-none active:translate-y-2 transition-all border-4 border-white overflow-hidden group hover:scale-110"
-            >
-                {/* Sparkle effects */}
-                <motion.div
-                    className="absolute top-0 left-0"
-                    animate={{
-                        rotate: 360,
-                        scale: [1, 1.2, 1]
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                    }}
-                >
-                    <Sparkles className="text-yellow-300" size={16} />
-                </motion.div>
-                <motion.div
-                    className="absolute bottom-0 right-0"
-                    animate={{
-                        rotate: -360,
-                        scale: [1, 1.2, 1]
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                    }}
-                >
-                    <Sparkles className="text-yellow-300" size={16} />
-                </motion.div>
 
-                {/* Shimmer effect */}
-                <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                    animate={{
-                        x: [-200, 200],
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 1
-                    }}
-                />
 
-                <span className="relative z-10 flex items-center gap-2">
-                    🎮 Guess Who?
-                </span>
-            </button>
+
 
             {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
